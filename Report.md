@@ -1,3 +1,7 @@
+---
+typora-root-url: images
+---
+
 # Malicious and Benign Websites Detection
 
 ## Ⅰ. Introduction
@@ -64,7 +68,7 @@ In these 21 features, the first feature "URL" is just a ID which is no practical
 
 #### 2. Transform textual data into binary data by one-hot encoding
 
-The data in 'CHARSET', 'SERVER', 'WHOIS_COUNTRY', 'WHOIS_STATEPRO' are text. In order to fit our machine learning model, we use One Hot Encoding, the value of the discrete feature is extended to the Euclidean space, and a value of the discrete feature corresponds to a point in the Euclidean space. In other word, we use a vector which is composed by 0 and 1. If the value is 1, it means the associated text is present in this sample.
+The data in 'CHARSET', 'SERVER', 'WHOIS_COUNTRY', 'WHOIS_STATEPRO' are text. In order to fit our machine learning model, we use One Hot Encoding, the value of the discrete feature is extended to the Euclidean space, and a value of the discrete feature corresponds to a point in the Euclidean space. In other word, we use a vector which is composed by 0 and 1. If the value is 1, it means the associated textual feature is present in this sample.
 
 #### 3. Extracting information from time
 
@@ -77,3 +81,18 @@ We use two ways to manage the None information. For the None in 'content_length'
 #### 5. Normalization
 
 The final step of the pretreatment is normalization. The data in different magnitude greatly affects the results of machine learning, especially in the model for example KNN. It causes different features to have different degrees of influence on the results. Therefore, normalization is the last and integral step.
+
+## Ⅴ. Model Build
+
+We create four model in our project: KNN, Logistic Regression, Random Forest and Neural Network. For the comparison of the result, we will not use accuracy. Because our dataset is unevenly distributed, the ratio of benign websites to malicious websites is about 8 : 1. Even though our model judges that all websites are benign websites, we will also have the result in high accuracy . Therefore, this metric doesn't has enough signification.
+
+In this case, we choose F1-score as our judgment basis. Because for example the research of malicious websites, precision is the rate that the real malicious websites in the detected malicious websites, recall is the rate that the detected real malicious websites in all the real malicious websites. F1-score is a harmonized average of precision and recall. We use the average of F1-score of benign website and F1-score of malicious website as the final metric of our evaluation of model. This can eliminate the problem of inaccurate judgment of results caused by uneven data distribution.
+
+#### 1. KNN
+
+KNN is one of the simplest machine learning models. The idea of this method is very simple and intuitive: if most of the K most similar (the closest in the feature space) samples of a sample belong to a certain category, then the sample also belongs to this category. In the classification decision, the method only determines the category of the samples to be divided according to the category of the nearest one or several samples. 
+
+In this method, the most important parameter is k which is number of nearest neighbor to vote the category of sample. To decide the best K, I use 5-fold cross validation for testing  k = 1, 3, 5. The result is that when k = 3, the model get the best F1-score. 
+
+<img src="/KNN.png" style="zoom:70%;" />
+
