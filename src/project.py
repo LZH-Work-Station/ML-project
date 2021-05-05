@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import seaborn as sns
 import math
+import matplotlib.pyplot as plt
 from numpy import *
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -133,7 +133,6 @@ def pretreatment(dataset, no_input, seed):
     dfcolumns = pd.DataFrame(column for column in X)
     featureScore = pd.concat([dfcolumns, dfscores], axis=1)
     featureScore.columns = ['Features','Score']
-    # print(featureScore.nlargest(30,'Score'))
     valuable_feature = featureScore.nlargest(no_input,'Score')['Features']
     X = X[valuable_feature]
     
@@ -162,16 +161,9 @@ def evaluate_logistic_regression(X_test, y_test, X_train, y_train):
     cm = confusion_matrix(y_true, y_pred)
     clr = classification_report(y_true, y_pred, target_names=["BENIGN", "MALIGNANT"])
     
-    # plt.figure(figsize=(8, 8))
-    # sns.heatmap(cm, annot=True, vmin=0, fmt='g', cmap='Blues', cbar=False)
-    # plt.xticks(np.arange(2) + 0.5, ["BENIGN", "MALIGNANT"])
-    # plt.yticks(np.arange(2) + 0.5, ["BENIGN", "MALIGNANT"])
-    # plt.xlabel("Predicted")
-    # plt.ylabel("Actual")
-    # plt.title("Confusion Matrix")
-    # plt.show()
-    
-    print("Classification Report:\n----------------------\n", clr)
+    print("Logistic regression Classification Report:\n----------------------\n", clr)
+
+    return y_pred.tolist()
 
 def evaluate_random_forest(X_test, y_test, X_train, y_train):
     model = RandomForestClassifier(n_estimators=50)
@@ -185,32 +177,24 @@ def evaluate_random_forest(X_test, y_test, X_train, y_train):
     
     cm = confusion_matrix(y_true, y_pred)
     clr = classification_report(y_true, y_pred, target_names=["BENIGN", "MALIGNANT"])
-
-    # plt.figure(figsize=(8, 8))
-    # sns.heatmap(cm, annot=True, vmin=0, fmt='g', cmap='Blues', cbar=False)
-    # plt.xticks(np.arange(2) + 0.5, ["BENIGN", "MALIGNANT"])
-    # plt.yticks(np.arange(2) + 0.5, ["BENIGN", "MALIGNANT"])
-    # plt.xlabel("Predicted")
-    # plt.ylabel("Actual")
-    # plt.title("Confusion Matrix")
-    # plt.show()
     
-    print("Classification Report:\n----------------------\n", clr)
+    print("Random Forest Classification Report:\n----------------------\n", clr)
+    return y_pred.tolist()
 
 def evaluate_KNN(X_test, y_test, X_train, y_train):
-    modelskNN=[]
-    modelskNN.append(('1', KNeighborsClassifier(n_neighbors=1)))
-    modelskNN.append(('3', KNeighborsClassifier(n_neighbors=3)))
-    modelskNN.append(('5', KNeighborsClassifier(n_neighbors=5)))
+    # modelskNN=[]
+    # modelskNN.append(('1', KNeighborsClassifier(n_neighbors=1)))
+    # modelskNN.append(('3', KNeighborsClassifier(n_neighbors=3)))
+    # modelskNN.append(('5', KNeighborsClassifier(n_neighbors=5)))
 
-    resultskNN = []
-    nameskNN=[]
-    kfold = StratifiedKFold(n_splits=5)
-    for name, model in modelskNN:
-        cv_results = cross_val_score(model, X_train, y_train, cv=kfold, scoring='f1')
-        resultskNN.append(cv_results)
-        nameskNN.append(name)
-        print('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
+    # resultskNN = []
+    # nameskNN=[]
+    # kfold = StratifiedKFold(n_splits=5)
+    # for name, model in modelskNN:
+    #     cv_results = cross_val_score(model, X_train, y_train, cv=kfold, scoring='f1')
+    #     resultskNN.append(cv_results)
+    #     nameskNN.append(name)
+    #     print('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
 
     model= KNeighborsClassifier(n_neighbors=3)
     model.fit(X_train,y_train)
@@ -224,7 +208,8 @@ def evaluate_KNN(X_test, y_test, X_train, y_train):
     cm = confusion_matrix(y_true, y_pred)
     clr = classification_report(y_true, y_pred, target_names=["BENIGN", "MALIGNANT"])
     
-    print("Classification Report:\n----------------------\n", clr)
+    print("KNN Classification Report:\n----------------------\n", clr)
+    return y_pred.tolist()
 
 def evaluate_neural(X_test, y_test, X_train, y_train, no_input, layer_1, layer_2, layer_3):
     model = Sequential()
@@ -247,49 +232,8 @@ def evaluate_neural(X_test, y_test, X_train, y_train, no_input, layer_1, layer_2
     cm = confusion_matrix(y_true, y_pred)
     clr = classification_report(y_true, y_pred, target_names=["BENIGN", "MALIGNANT"])
     
-    print("Classification Report:\n----------------------\n", clr)
-    return metrics.f1_score(y_test, y_pred, average=None), y_pred
-
-def cross_validation(no_input, skf):
-    X_train, X_test, y_train, y_test, X, y = pretreatment(dataset, no_input)
-    X_train_ = []
-    Y_train_ = []
-    X_test_ = []
-    Y_test_ = []
-
-    for train_index, test_index in skf:
-        # print(test_index)
-        for k in train_index:
-            X_train_.append(X.values[k,:])
-            Y_train_.append(y.values[k])
-        for j in test_index:
-            X_test_.append(X.values[j,:])
-            Y_test_.append(y.values[j])
-        break
-    
-    
-    X_train_ = pd.DataFrame(X_train_)
-    Y_train_ = pd.DataFrame(Y_train_)
-    X_test_ = pd.DataFrame(X_test_)
-    Y_test_ = pd.DataFrame(Y_test_)
-    # print(X_test_)
-    # print(X)
-    # print(Y_test_)
-    # print(y)
-    evaluate_neural(X_test_, Y_test_, X_train_, Y_train_, no_input)
-
-    # print("-------------------------------------")
-    model = Sequential()
-    model.add(Dense(150, input_dim=no_input, activation='relu'))
-    model.add(Dense(100, activation='relu'))
-    model.add(Dense(50, activation='relu'))
-    model.add(Dense(1, activation='sigmoid'))
-    # compile the keras model
-    model.compile(loss='binary_crossentropy', optimizer=Adam(learning_rate=0.0017), metrics=['accuracy'])
-    history = model.fit(X_train_, Y_train_, epochs=10, batch_size=10)
-    y_pred = model.predict(X_test_)>0.5
-
-    return metrics.f1_score(Y_test_, y_pred, average=None)
+    print("Neural Network Classification Report:\n----------------------\n", clr)
+    return metrics.f1_score(y_test, y_pred, average=None), y_pred.tolist()
 
 def find_no_input_feature():
     step = 3
@@ -365,22 +309,47 @@ def find_no_nodes():
                     print('score = ', output_score)
                     print("Output_no_nodes = ", res)   
 
+def vote(logistic_res, rd_res, knn_res, neural_res, y_test):
+    res = []
+    neural_int_res = []
+    for i in range(len(rd_res)):
+        if neural_res[i] == [False]:
+            neural_int_res.append(0)
+        else:
+            neural_int_res.append(1)
+
+    for i in range(len(rd_res)):
+        if rd_res[i] or neural_int_res[i] == 1:
+            res.append(1)
+        else:
+            res.append(0)
+    y_true = np.array(y_test)
+    cm = confusion_matrix(y_true, res)
+    clr = classification_report(y_true, res, target_names=["BENIGN", "MALIGNANT"])
+    
+    print("Final Classification Report:\n----------------------\n", clr, "\n")
+    
+
 names = ['URL','URL_LENGTH', 'NUMBER_SPECIAL_CHARACTERS', 'CHARSET', 'SERVER','CONTENT_LENGTH','WHOIS_COUNTRY', 'WHOIS_STATEPRO', 'WHOIS_REGDATE', 'WHOIS_UPDATED_DATE', 'TCP_CONVERSATION_EXCHANGE','DIST_REMOTE_TCP_PORT', 'REMOTE_IPS', 'APP_BYTES', 'SOURCE_APP_PACKETS', 'REMOTE_APP_PACKETS','SOURCE_APP_BYTES','REMOTE_APP_BYTES','APP_PACKETS','DNS_QUERY_T','Type']
 
 dataset = pd.read_csv("dataset.csv", header=0, names=names)
+print(dataset.describe())
 
 no_input = 148
 seed = 2
-X_train, X_test, y_train, y_test, X, y = pretreatment(dataset, no_input, 1)
+X_train, X_test, y_train, y_test, X, y = pretreatment(dataset, no_input, seed)
 
-
+plt.hist(y)
+plt.show()
 # find_no_input_feature()
 # find_no_nodes()
 
-evaluate_logistic_regression(X_test, y_test, X_train, y_train)
-evaluate_random_forest(X_test, y_test, X_train, y_train)
-evaluate_KNN(X_test, y_test, X_train, y_train)
-evaluate_neural(X_test, y_test, X_train, y_train, no_input, 50, 70, 50)
+# print(evaluate_logistic_regression(X_test, y_test, X_train, y_train)[0])
+# evaluate_random_forest(X_test, y_test, X_train, y_train)
+# evaluate_KNN(X_test, y_test, X_train, y_train)
+# print(evaluate_neural(X_test, y_test, X_train, y_train, no_input, 50, 70, 50)[1])
+
+# vote(evaluate_logistic_regression(X_test, y_test, X_train, y_train), evaluate_random_forest(X_test, y_test, X_train, y_train), evaluate_KNN(X_test, y_test, X_train, y_train), evaluate_neural(X_test, y_test, X_train, y_train, no_input, 50, 70, 50)[1], y_test)
 
 
 
