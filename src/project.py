@@ -223,10 +223,6 @@ def evaluate_neural(X_test, y_test, X_train, y_train, no_input, layer_1, layer_2
 
     history = model.fit(X_train, y_train, epochs=10, batch_size=10)
     y_pred = model.predict(X_test)>0.5
-    
-    # print(metrics.accuracy_score(y_test, y_pred))
-    # print(metrics.confusion_matrix(y_test, y_pred))
-    # print(metrics.classification_report(y_test, y_pred)) 
 
     y_true = np.array(y_test)
     cm = confusion_matrix(y_true, y_pred)
@@ -255,35 +251,6 @@ def find_no_input_feature():
         print('score = ', output_score)
         print("Output_no_input = ", res)
 
-    
-    # for no_input in range(2,464,step):    
-    #     score1=[] 
-    #     score2=[] 
-    #     score1_=[] 
-    #     score2_ = []
-    #     for i in range(5):    
-    #         skf = StratifiedKFold(n_splits=5, shuffle=True).split(X, y)
-    #         score1.append(cross_validation(no_input, skf)[0])
-    #         score1_.append(cross_validation(no_input, skf)[1])
-    #         score2.append(cross_validation(no_input+step, skf)[0])
-    #         score2_.append(cross_validation(no_input+step, skf)[1])
-
-    #     print(score1, score2)
-    #     print(score1_, score2_)
-
-    #     stat, p = ttest_rel(score1, score2)
-    #     stat_, p_ = ttest_rel(score1_, score2_)
-    #     print('Statistics=%.3f, p=%.3f' % (stat, p))
-    #     alpha = 0.05
-    #     if p > alpha and p_ > alpha:
-    #         print('--------------------------------------')
-    #         print('Find n')
-    #         break
-    #     else:
-    #         print('--------------------------------------')
-    #         print('Do not find n, n is', no_input)
-    #         continue
-
 
 def find_no_nodes():
     step = 20
@@ -309,7 +276,7 @@ def find_no_nodes():
                     print('score = ', output_score)
                     print("Output_no_nodes = ", res)   
 
-def vote(logistic_res, rd_res, knn_res, neural_res, y_test):
+def vote(rd_res, neural_res, y_test):
     res = []
     neural_int_res = []
     for i in range(len(rd_res)):
@@ -329,27 +296,36 @@ def vote(logistic_res, rd_res, knn_res, neural_res, y_test):
     
     print("Final Classification Report:\n----------------------\n", clr, "\n")
     
+def display_label(y):
+    y_1 = []
+    y_0 = []
+    for i in y:
+        if i == 0:
+            y_0.append(i)
+        else:
+            y_1.append(i)
+    plt.hist(y_0,range=(0,1))
+    plt.hist(y_1,range=(0,1))
+    plt.title("Histogram of Benign and Malicious Website")
+    plt.legend(["Benign", "Malicious"])
+    plt.show()
+
 
 names = ['URL','URL_LENGTH', 'NUMBER_SPECIAL_CHARACTERS', 'CHARSET', 'SERVER','CONTENT_LENGTH','WHOIS_COUNTRY', 'WHOIS_STATEPRO', 'WHOIS_REGDATE', 'WHOIS_UPDATED_DATE', 'TCP_CONVERSATION_EXCHANGE','DIST_REMOTE_TCP_PORT', 'REMOTE_IPS', 'APP_BYTES', 'SOURCE_APP_PACKETS', 'REMOTE_APP_PACKETS','SOURCE_APP_BYTES','REMOTE_APP_BYTES','APP_PACKETS','DNS_QUERY_T','Type']
-
 dataset = pd.read_csv("dataset.csv", header=0, names=names)
-print(dataset.describe())
 
-no_input = 148
+
+no_input = 160
 seed = 2
 X_train, X_test, y_train, y_test, X, y = pretreatment(dataset, no_input, seed)
 
-plt.hist(y)
-plt.show()
+evaluate_logistic_regression(X_test, y_test, X_train, y_train)
+
+# display_label(y)
 # find_no_input_feature()
 # find_no_nodes()
 
-# print(evaluate_logistic_regression(X_test, y_test, X_train, y_train)[0])
-# evaluate_random_forest(X_test, y_test, X_train, y_train)
-# evaluate_KNN(X_test, y_test, X_train, y_train)
-# print(evaluate_neural(X_test, y_test, X_train, y_train, no_input, 50, 70, 50)[1])
-
-# vote(evaluate_logistic_regression(X_test, y_test, X_train, y_train), evaluate_random_forest(X_test, y_test, X_train, y_train), evaluate_KNN(X_test, y_test, X_train, y_train), evaluate_neural(X_test, y_test, X_train, y_train, no_input, 50, 70, 50)[1], y_test)
+# vote(evaluate_random_forest(X_test, y_test, X_train, y_train), evaluate_neural(X_test, y_test, X_train, y_train, no_input, 50, 70, 50)[1], y_test)
 
 
 
