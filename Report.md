@@ -1,7 +1,3 @@
----
-
----
-
 # Malicious and Benign Websites Detection
 
 ## Ⅰ. Introduction
@@ -11,8 +7,8 @@ In this project, we analyze the detection of malicious and benign websites based
 ## Ⅱ. Dataset Used
 
 In this project, we use the dataset which is created by Christian Urcuqui in Malicious and Benign Websites classify by application and network features. Unfortunately, there is a lack of datasets with malicious and benign web characteristics, especially for malicious websites. We can look at the following figure, it is the histogram of benign and malicious website. We have a not bad number of benign websites, but for the number of malicious website is really not enough. Finally, we have 1565 samples for benign website and 216 for malicious websites. 
-
-<img src="images\hist.png" alt="1200" style="zoom:50%;" />
+<div align = 'center'>	
+<img src="images\hist.png" alt="1200" style="zoom:30%;" /></div>
 
 ## Ⅲ. Features Used
 
@@ -94,9 +90,11 @@ KNN is one of the simplest machine learning models. The idea of this method is v
 
 In this method, the most important parameter is k which is number of nearest neighbor to vote the category of sample. To decide the best K, I use 5-fold cross validation for testing  k = 1, 3, 5. The result is that when k = 3, the model get the best F1-score. 
 
+<div align = 'center'>	
 <img src="images/KNN.png" style="zoom:70%;" />
-
+</div>
 This figure is a result of complete process of training and then validation. In this result, we can do a conclusion that KNN performs very well in the test of benign websites, with the F1-score reaching 0.97, but the test of malicious websites is relatively not excellent enough. The Recall value is only 0.65, which means that there are many malicious sites that have not been detected. We think this is directly related to the lack of samples of malicious websites.
 
 #### 2. Logistic Regression
 
+Logistic Regression is a very common model for the classification problem. 
