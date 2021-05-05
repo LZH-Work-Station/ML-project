@@ -96,3 +96,7 @@ In this method, the most important parameter is k which is number of nearest nei
 
 <img src="images/KNN.png" style="zoom:70%;" />
 
+This figure is a result of complete process of training and then validation. In this result, we can do a conclusion that KNN performs very well in the test of benign websites, with the F1-score reaching 0.97, but the test of malicious websites is relatively not excellent enough. The Recall value is only 0.65, which means that there are many malicious sites that have not been detected. We think this is directly related to the lack of samples of malicious websites.
+
+#### 2. Logistic Regression
+
