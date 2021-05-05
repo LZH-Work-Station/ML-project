@@ -1,5 +1,5 @@
 ---
-typora-root-url: images
+
 ---
 
 # Malicious and Benign Websites Detection
@@ -94,5 +94,5 @@ KNN is one of the simplest machine learning models. The idea of this method is v
 
 In this method, the most important parameter is k which is number of nearest neighbor to vote the category of sample. To decide the best K, I use 5-fold cross validation for testing  k = 1, 3, 5. The result is that when k = 3, the model get the best F1-score. 
 
-<img src="/KNN.png" style="zoom:70%;" />
+<img src="images/KNN.png" style="zoom:70%;" />
 
