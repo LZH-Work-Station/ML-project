@@ -6,5 +6,5 @@ In this project, we analyze the detection of malicious and benign websites based
 
 ## Ⅱ. Data Used
 
-<img src="E:\Polyu\MACHINE LEARNING IN CYPER SECURITY\ML-project\images\hist.jpg" alt="1200" style="zoom:50%;" />
+<img src="images\hist.jpg" alt="1200" style="zoom:50%;" />
 
