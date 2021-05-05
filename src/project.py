@@ -27,17 +27,29 @@ from keras.models import Sequential
 from keras.optimizers import Adam
 from scipy.stats import ttest_rel
 
+def display_label(y):
+    # Display the distribution of benign and malicious websites
+    y_1 = []
+    y_0 = []
+    for i in y:
+        if i == 0:
+            y_0.append(i)
+        else:
+            y_1.append(i)
+    plt.hist(y_0,range=(0,1))
+    plt.hist(y_1,range=(0,1))
+    plt.title("Histogram of Benign and Malicious Website")
+    plt.legend(["Benign", "Malicious"])
+    plt.show()
+
 def onehot_encode(dataset, column_dict):
     dataset = dataset.copy()
     for column, prefix in column_dict.items():
         dummies = pd.get_dummies(dataset[column], prefix=prefix)
         dataset = pd.concat([dataset, dummies], axis=1)
         dataset = dataset.drop(column, axis=1)
-        # print(dummies)
     return dataset
 
- 
-    #Find the unique values in the column “feature_name”
     values = data[feature_name].unique()
 
     entropy=0
@@ -50,11 +62,14 @@ def onehot_encode(dataset, column_dict):
     
 def pretreatment(dataset, no_input, seed):
     dataset = dataset.copy()
+
+    # ---------------------------------Step 1----------------------------------------
     # Drop the URL column, because it is only the id for the URL, no real significance
     dataset = dataset.drop('URL', axis=1)
-        
-    # # ---------------------------------Date transform version 1--------------------------------
-    # # Extract datetime features
+
+    # ---------------------------------Step 2----------------------------------------     
+    # ---------------------------------Date transform--------------------------------
+    # Extract datetime features
     for column in ['WHOIS_REGDATE', 'WHOIS_UPDATED_DATE']:
         dataset[column] = pd.to_datetime(dataset[column], errors='coerce')
     
@@ -70,27 +85,11 @@ def pretreatment(dataset, no_input, seed):
     dataset['UPD_HOUR'] = dataset['WHOIS_UPDATED_DATE'].apply(lambda x: x.hour)
     dataset['UPD_MINUTE'] = dataset['WHOIS_UPDATED_DATE'].apply(lambda x: x.minute)
     
-    
-    # ---------------------------------Date transform version 2--------------------------------
-    # for column in ['WHOIS_REGDATE', 'WHOIS_UPDATED_DATE']:
-    #     dataset[column] = pd.to_datetime(dataset[column], errors='coerce')
-    # dataset['REG_YEAR'] = dataset['WHOIS_REGDATE'].apply(lambda x: x.year)
-    # dataset['UPD_YEAR'] = dataset['WHOIS_UPDATED_DATE'].apply(lambda x: x.year)
-    # dataset['REG_MONTH'] = dataset['WHOIS_REGDATE'].apply(lambda x: x.month)
-    # dataset['UPD_MONTH'] = dataset['WHOIS_UPDATED_DATE'].apply(lambda x: x.month)
-    # dataset['REGINFO'] = dataset['WHOIS_REGDATE'].apply(lambda x: 1 if x != 'None' else 0)
-    # dataset['UPDINFO'] = dataset['WHOIS_UPDATED_DATE'].apply(lambda x: 1 if x != 'None' else 0)
-
-    # dataset['NO_UPD'] = dataset['UPDINFO'].copy()
-    # for i in range(len(dataset['REGINFO'])):
-    #     if dataset['REGINFO'].iloc[i] == 1 and dataset['UPDINFO'].iloc[i] == 0:
-    #         dataset['NO_UPD'].iloc[i] = 1
-    #     else:
-    #         dataset['NO_UPD'].iloc[i] = 0
         
     dataset = dataset.drop(['WHOIS_REGDATE', 'WHOIS_UPDATED_DATE'], axis=1)
 
-    # One-hot encode categorical features
+    # ---------------------------------Step 3----------------------------------------
+    # -------------------------One-hot encode categorical features-------------------
     for column in ['CHARSET', 'SERVER', 'WHOIS_COUNTRY', 'WHOIS_STATEPRO']:
         dataset[column] = dataset[column].apply(lambda x: x.lower() if str(x) != 'nan' else x)
     
@@ -103,13 +102,8 @@ def pretreatment(dataset, no_input, seed):
             'WHOIS_STATEPRO': 'WS'
         }
     )
-    
-    # ---------------------------------Fill missing values version 1--------------------------------
-    # missing_value_columns = dataset.columns[dataset.isna().sum() > 0]
-    # for column in missing_value_columns:
-    #     dataset[column] = dataset[column].fillna(dataset[column].mean())
-
-    # ---------------------------------Fill missing values version 2--------------------------------
+    # ---------------------------------Step 4----------------------------------------
+    # ---------------------------------Fill missing values--------------------------------
     missing_value_columns = dataset.columns[dataset.isna().sum() > 0]
     date_miss = missing_value_columns[2::]
     other_features = missing_value_columns[0:2]
@@ -118,7 +112,7 @@ def pretreatment(dataset, no_input, seed):
     for column in date_miss:
         dataset[column] = dataset[column].fillna(0)
 
-
+    # ---------------------------------Step 5----------------------------------------
     # ---------------------------------Normalization-----------------------------------
     y = dataset['Type'].copy()
     X = dataset.drop('Type', axis=1).copy()
@@ -146,6 +140,9 @@ def pretreatment(dataset, no_input, seed):
     return X_train, X_test, y_train, y_test, X, y
 
 def evaluate_logistic_regression(X_test, y_test, X_train, y_train):
+    # The model of logistic regression
+    # Use the model degree = 2
+
     model = LogisticRegression(max_iter=1000)
     poly = PolynomialFeatures(degree = 2)
     X_poly = poly.fit_transform(X_train)
@@ -182,6 +179,9 @@ def evaluate_random_forest(X_test, y_test, X_train, y_train):
     return y_pred.tolist()
 
 def evaluate_KNN(X_test, y_test, X_train, y_train):
+    # KNN model
+
+    # ---------------------------------Find the best k----------------------------------------
     # modelskNN=[]
     # modelskNN.append(('1', KNeighborsClassifier(n_neighbors=1)))
     # modelskNN.append(('3', KNeighborsClassifier(n_neighbors=3)))
@@ -212,6 +212,9 @@ def evaluate_KNN(X_test, y_test, X_train, y_train):
     return y_pred.tolist()
 
 def evaluate_neural(X_test, y_test, X_train, y_train, no_input, layer_1, layer_2, layer_3):
+    # Neural Network Model
+    # Feature used = 148
+    # Hidden layer 50-70-50
     model = Sequential()
     model.add(Dense(layer_1, input_dim=no_input, activation='relu'))
     model.add(Dense(layer_2, activation='relu'))
@@ -232,14 +235,15 @@ def evaluate_neural(X_test, y_test, X_train, y_train, no_input, layer_1, layer_2
     return metrics.f1_score(y_test, y_pred, average=None), y_pred.tolist()
 
 def find_no_input_feature():
+    # Find the best number of input features for neural network
     step = 3
     output_score = 0
     res = 0
 
-    for no_input in range(133,149,step):    
+    for no_input in range(10,474,step):    
         score = []
         for i in range(5):    
-            X_train, X_test, y_train, y_test, X, y = pretreatment(dataset, no_input)
+            X_train, X_test, y_train, y_test, X, y = pretreatment(dataset, no_input, i)
             score.append(evaluate_neural(X_test, y_test, X_train, y_train, no_input, 150, 100, 50)[0])
 
         if  output_score < mean(score):
@@ -253,7 +257,8 @@ def find_no_input_feature():
 
 
 def find_no_nodes():
-    step = 20
+    # find the best number of nodes for neural network
+    step = 10
     output_score = 0
     res = []
     open("record.txt", "w")
@@ -277,6 +282,7 @@ def find_no_nodes():
                     print("Output_no_nodes = ", res)   
 
 def vote(rd_res, neural_res, y_test):
+    # Do the combination of the result of random forest and neural network
     res = []
     neural_int_res = []
     for i in range(len(rd_res)):
@@ -295,37 +301,17 @@ def vote(rd_res, neural_res, y_test):
     clr = classification_report(y_true, res, target_names=["BENIGN", "MALIGNANT"])
     
     print("Final Classification Report:\n----------------------\n", clr, "\n")
-    
-def display_label(y):
-    y_1 = []
-    y_0 = []
-    for i in y:
-        if i == 0:
-            y_0.append(i)
-        else:
-            y_1.append(i)
-    plt.hist(y_0,range=(0,1))
-    plt.hist(y_1,range=(0,1))
-    plt.title("Histogram of Benign and Malicious Website")
-    plt.legend(["Benign", "Malicious"])
-    plt.show()
+
 
 
 names = ['URL','URL_LENGTH', 'NUMBER_SPECIAL_CHARACTERS', 'CHARSET', 'SERVER','CONTENT_LENGTH','WHOIS_COUNTRY', 'WHOIS_STATEPRO', 'WHOIS_REGDATE', 'WHOIS_UPDATED_DATE', 'TCP_CONVERSATION_EXCHANGE','DIST_REMOTE_TCP_PORT', 'REMOTE_IPS', 'APP_BYTES', 'SOURCE_APP_PACKETS', 'REMOTE_APP_PACKETS','SOURCE_APP_BYTES','REMOTE_APP_BYTES','APP_PACKETS','DNS_QUERY_T','Type']
 dataset = pd.read_csv("dataset.csv", header=0, names=names)
 
 
-no_input = 160
-seed = 2
+no_input = 148
+seed = 3
 X_train, X_test, y_train, y_test, X, y = pretreatment(dataset, no_input, seed)
 
-evaluate_KNN(X_test, y_test, X_train, y_train)
-
-# display_label(y)
-# find_no_input_feature()
-# find_no_nodes()
-
-# vote(evaluate_random_forest(X_test, y_test, X_train, y_train), evaluate_neural(X_test, y_test, X_train, y_train, no_input, 50, 70, 50)[1], y_test)
-
+vote(evaluate_random_forest(X_test, y_test, X_train, y_train), evaluate_neural(X_test, y_test, X_train, y_train, no_input, 50, 70, 50)[1], y_test)
 
 
