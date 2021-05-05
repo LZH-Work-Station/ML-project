@@ -319,7 +319,7 @@ no_input = 160
 seed = 2
 X_train, X_test, y_train, y_test, X, y = pretreatment(dataset, no_input, seed)
 
-evaluate_logistic_regression(X_test, y_test, X_train, y_train)
+evaluate_KNN(X_test, y_test, X_train, y_train)
 
 # display_label(y)
 # find_no_input_feature()
